@@ -4,7 +4,11 @@ import Register from './Pages/Register';
 import Login from './Pages/Login';
 import Home from './Pages/Home';
 
-import "react-toastify/dist/ReactToastify.css";
+// import "react-toastify/dist/ReactToastify.css";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootswatch/dist/lux/bootstrap.min.css';
+
+
 
 function App() {
   return (

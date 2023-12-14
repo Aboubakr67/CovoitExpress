@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
 import { useEffect } from "react";
+import NavigationBar from "../Components/nav/NavigationBar";
 
 function Login() {
 
@@ -10,49 +10,70 @@ function Login() {
 
     const created = localStorage.getItem("created");
 
-    const [values, setValues] = useState({
+    const [formData, setFormData] = useState({
         email: "",
         password: ""
     });
 
-    const generateError = (err) => {
-        toast.error(err, {
-            position: "bottom-right",
-        })
+    const [errors, setErrors] = useState({});
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value })
+        // console.log(e.target.value);
+    }
+
+    const validate = () => {
+        const errors = {};
+
+
+        if (!formData.email || !formData.email.includes('@')) {
+            errors.email = 'Veuillez entrer une adresse e-mail valide';
+        }
+        else if (!formData.password || formData.password.length <= 1) {
+            errors.password = 'Veuillez entrer un mot de passe valide';
+        }
+
+        return errors;
     };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        try {
-            const { data } = await axios.post("http://localhost:4000/api/auth/login", {
-                ...values,
-            }, {
-                withCredentials: true,
-            }
-            );
+        const validationErrors = validate();
+        if (Object.keys(validationErrors).length === 0) {
+            // Soumettre le formulaire
+            console.log(formData);
 
-            if (data) {
-                if (data.errors) {
-                    console.log(data.errors);
-                    const { email, password } = data.errors;
-                    if (email) generateError(email);
-                    else if (password) generateError(password);
-                } else {
-                    navigate('/');
+            try {
+                const { data } = await axios.post("http://localhost:4000/api/auth/login", {
+                    ...formData,
+                }, {
+                    withCredentials: true,
                 }
+                );
+
+                if (data) {
+                    if (data.errors) {
+                        console.log(data.errors);
+                        // const { email, password } = data.errors;
+                        setErrors(data.errors);
+                    } else {
+                        setErrors({});
+                        navigate('/');
+                    }
+                }
+            } catch (error) {
+                console.log(error);
             }
-        } catch (error) {
-            console.log(error);
         }
-
+        else {
+            setErrors(validationErrors);
+        }
     }
 
 
-    const handleChange = (e) => {
-        setValues({ ...values, [e.target.name]: e.target.value })
-        // console.log(e.target.value);
-    }
+
 
     useEffect(() => {
         const cleanup = () => {
@@ -71,30 +92,54 @@ function Login() {
 
 
     return (
-        <div className="container">
-            {created && (
-                <div className="success-message">
-                    Félicitations, votre compte a été créé!
+        <div className="container mt-5">
+            <div className="card">
+                <div className="card-body">
+                    {created && (
+                        <div className="success-message">
+                            Félicitations, votre compte a été créé!
+                        </div>
+                    )}
+                    <h2>Connectez-vous</h2>
+                    <form onSubmit={(e) => handleSubmit(e)}>
+                        <div className="mb-3">
+                            <label htmlFor="email" className="form-label">E-mail</label>
+                            <input
+                                type="email"
+                                name="email"
+                                className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+                                placeholder="Votre E-mail"
+                                onChange={handleChange}
+                            />
+                            {errors.email && <p className="error">{errors.email}</p>}
+                        </div>
+                        <div className="mb-3">
+                            <label htmlFor="password" className="form-label">Mot de passe</label>
+                            <input
+                                type="password"
+                                name="password"
+                                className={`form-control ${errors.password ? 'is-invalid' : ''}`}
+                                placeholder="Votre mot de passe"
+                                onChange={handleChange}
+                            />
+                            {errors.password && <p className="error">{errors.password}</p>}
+                        </div>
+
+                        <div className="d-flex justify-content-between mt-4">
+                            <button className="btn btn-primary" type="submit">
+                                Envoyer
+                            </button>
+                        </div>
+                    </form>
+                    <div className="mt-3 text-center">
+                        <span>
+                            Vous n'avez pas de compte ? <Link to="/register">Inscrivez-vous</Link>
+                        </span>
+                    </div>
                 </div>
-            )}
-            <h2>Login Account</h2>
-            <form onSubmit={(e) => handleSubmit(e)}>
-                <div>
-                    <label htmlFor="email">Email</label>
-                    <input type="email" name="email" placeholder="Email" onChange={handleChange} />
-                </div>
-                <div>
-                    <label htmlFor="password">Password</label>
-                    <input type="password" name="password" placeholder="Password" onChange={handleChange} />
-                </div>
-                <button type="submit">Submit</button>
-                <span>
-                    If you don't have an account? <Link to="/register">Register</Link>
-                </span>
-            </form>
-            <ToastContainer />
+            </div>
         </div>
-    )
+    );
 }
 
 export default Login;

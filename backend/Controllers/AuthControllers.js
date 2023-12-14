@@ -48,8 +48,10 @@ module.exports.register = async (req, res, next) => {
         if (!tel) errors.tel = "Numero de telephone is required";
 
         if (Object.keys(errors).length > 0) {
-            // Si l'un des champs est vide, renvoyer une erreur
-            return res.json({ errors, created: false });
+            // Si l'un des champs est vide, renvoyer une erreur 422 (Unprocessable Entity)
+            // ! A retenir :
+            // res.status(422): Cela définit le code de statut HTTP de la réponse. Dans ce cas, il s'agit du code HTTP 422 qui signifie "Unprocessable Entity". Ce code est souvent utilisé pour indiquer que la requête est bien reçue, mais qu'il y a un problème avec le contenu de la requête qui empêche le serveur de la traiter correctement.
+            return res.status(422).json({ errors, created: false });
         }
 
 
@@ -67,7 +69,7 @@ module.exports.register = async (req, res, next) => {
     } catch (err) {
         console.log(err);
         const errors = handleErrors(err);
-        res.json({ errors, created: false });
+        res.status(500).json({ errors, created: false });
     }
 };
 
