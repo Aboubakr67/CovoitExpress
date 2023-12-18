@@ -60,7 +60,7 @@ function Login() {
                         setErrors(data.errors);
                     } else {
                         setErrors({});
-                        navigate('/');
+                        navigate('/dashboard');
                     }
                 }
             } catch (error) {
@@ -91,55 +91,125 @@ function Login() {
     }, []);
 
 
-    return (
-        <div className="container mt-5">
-            <div className="card">
-                <div className="card-body">
-                    {created && (
-                        <div className="success-message">
-                            Félicitations, votre compte a été créé!
-                        </div>
-                    )}
-                    <h2>Connectez-vous</h2>
-                    <form onSubmit={(e) => handleSubmit(e)}>
-                        <div className="mb-3">
-                            <label htmlFor="email" className="form-label">E-mail</label>
-                            <input
-                                type="email"
-                                name="email"
-                                className={`form-control ${errors.email ? 'is-invalid' : ''}`}
-                                placeholder="Votre E-mail"
-                                onChange={handleChange}
-                            />
-                            {errors.email && <p className="error">{errors.email}</p>}
-                        </div>
-                        <div className="mb-3">
-                            <label htmlFor="password" className="form-label">Mot de passe</label>
-                            <input
-                                type="password"
-                                name="password"
-                                className={`form-control ${errors.password ? 'is-invalid' : ''}`}
-                                placeholder="Votre mot de passe"
-                                onChange={handleChange}
-                            />
-                            {errors.password && <p className="error">{errors.password}</p>}
-                        </div>
+    // return (
+    //     <div>
+    //         <NavigationBar></NavigationBar>
+    //         <div className="container mt-5">
+    //             <div className="card">
+    //                 <div className="card-body">
+    //                     {created && (
+    //                         <div className="success-message">
+    //                             Félicitations, votre compte a été créé!
+    //                         </div>
+    //                     )}
+    //                     <h2>Connectez-vous</h2>
+    //                     <form onSubmit={(e) => handleSubmit(e)}>
+    //                         <div className="mb-3">
+    //                             <label htmlFor="email" className="form-label">E-mail</label>
+    //                             <input
+    //                                 type="email"
+    //                                 name="email"
+    //                                 className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+    //                                 placeholder="Votre E-mail"
+    //                                 onChange={handleChange}
+    //                             />
+    //                             {errors.email && <p className="error">{errors.email}</p>}
+    //                         </div>
+    //                         <div className="mb-3">
+    //                             <label htmlFor="password" className="form-label">Mot de passe</label>
+    //                             <input
+    //                                 type="password"
+    //                                 name="password"
+    //                                 className={`form-control ${errors.password ? 'is-invalid' : ''}`}
+    //                                 placeholder="Votre mot de passe"
+    //                                 onChange={handleChange}
+    //                             />
+    //                             {errors.password && <p className="error">{errors.password}</p>}
+    //                         </div>
 
-                        <div className="d-flex justify-content-between mt-4">
-                            <button className="btn btn-primary" type="submit">
-                                Envoyer
-                            </button>
+    //                         <div className="d-flex justify-content-between mt-4">
+    //                             <button className="btn btn-primary" type="submit">
+    //                                 Envoyer
+    //                             </button>
+    //                         </div>
+    //                     </form>
+    //                     <div className="mt-3 text-center">
+    //                         <span>
+    //                             Vous n'avez pas de compte ? <Link to="/register">Inscrivez-vous</Link>
+    //                         </span>
+    //                     </div>
+    //                 </div>
+    //             </div>
+    //         </div>
+    //     </div>
+    // );
+
+
+    return (
+        <div style={{ marginTop: '20px' }}>
+            <NavigationBar />
+
+            <div className="row">
+                {/* Colonne de gauche avec l'image */}
+                <div className="col-md-6">
+                    <img
+                        src="/img/covoit_express_connexion.jpg"
+                        alt="Logo"
+                        className="img-fluid"
+                    />
+                </div>
+
+                {/* Colonne de droite avec le formulaire */}
+                <div className="col-md-6">
+                    <div className="card-body">
+                        <h2>Connectez-vous</h2>
+                        <form onSubmit={(e) => handleSubmit(e)}>
+                            <div className="mb-3">
+                                <label htmlFor="email" className="form-label">
+                                    E-mail
+                                </label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+                                    placeholder="Votre E-mail"
+                                    onChange={handleChange}
+                                />
+                                {errors.email && <p className="error">{errors.email}</p>}
+                            </div>
+                            <div className="mb-3">
+                                <label htmlFor="password" className="form-label">
+                                    Mot de passe
+                                </label>
+                                <input
+                                    type="password"
+                                    name="password"
+                                    className={`form-control ${errors.password ? 'is-invalid' : ''}`}
+                                    placeholder="Votre mot de passe"
+                                    onChange={handleChange}
+                                />
+                                {errors.password && <p className="error">{errors.password}</p>}
+                            </div>
+
+                            <div className="d-flex justify-content-between mt-4">
+                                <button className="btn btn-primary" type="submit">
+                                    Envoyer
+                                </button>
+                            </div>
+                        </form>
+
+                        <div className="mt-3 text-center">
+                            <span>
+                                Vous n'avez pas de compte ? <Link to="/register">Inscrivez-vous</Link>
+                            </span>
                         </div>
-                    </form>
-                    <div className="mt-3 text-center">
-                        <span>
-                            Vous n'avez pas de compte ? <Link to="/register">Inscrivez-vous</Link>
-                        </span>
                     </div>
                 </div>
             </div>
         </div>
     );
+
+
 }
 
 export default Login;

@@ -14,11 +14,11 @@ const handleErrors = (err) => {
     let errors = { email: "", password: "" };
 
     if (err.message === "incorrect email") {
-        errors.email = "That email is not registered";
+        errors.email = "L'email n'est pas enregistrer";
     }
 
     if (err.message === "incorrect password") {
-        errors.password = "That password is incorrect";
+        errors.password = "Le mot de passe est incorrect";
     }
 
 
@@ -50,7 +50,7 @@ module.exports.register = async (req, res, next) => {
         if (Object.keys(errors).length > 0) {
             // Si l'un des champs est vide, renvoyer une erreur 422 (Unprocessable Entity)
             // ! A retenir :
-            // res.status(422): Cela définit le code de statut HTTP de la réponse. Dans ce cas, il s'agit du code HTTP 422 qui signifie "Unprocessable Entity". Ce code est souvent utilisé pour indiquer que la requête est bien reçue, mais qu'il y a un problème avec le contenu de la requête qui empêche le serveur de la traiter correctement.
+            // Le code HTTP 422 (Unprocessable Entity) est utilisé pour indiquer que la requête est bien reçue par le serveur, mais qu'il y a un problème avec le contenu de la requête qui empêche le serveur de la traiter correctement. Il est souvent utilisé pour signaler des erreurs de validation.
             return res.status(422).json({ errors, created: false });
         }
 
@@ -102,4 +102,32 @@ module.exports.login = async (req, res, next) => {
         res.json({ errors, created: false });
     }
 
+};
+
+
+module.exports.checkUserExists = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+        console.log(email);
+        // Vérifier si l'utilisateur existe déjà dans la base de données
+        const existingUser = await UserModel.findOne({ email });
+
+        if (existingUser) {
+            // L'utilisateur existe déjà, renvoyer un message indiquant qu'il existe
+            // return res.json({ error: 'Cet e-mail est déjà utilisé par un autre utilisateur.', exists: true });
+
+            // L'utilisateur existe déjà, renvoyer true
+            return res.json({ exists: true });
+        }
+
+        // L'utilisateur n'existe pas encore, permettre de passer à la suite du formulaire
+        // return res.json({ exists: false });
+
+        // L'utilisateur n'existe pas encore, renvoyer false
+        return res.json({ exists: false });
+
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ error: 'Erreur lors de la vérification de l\'utilisateur.', exists: false });
+    }
 };

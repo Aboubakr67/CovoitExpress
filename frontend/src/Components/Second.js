@@ -54,7 +54,7 @@ function Second({ formData, handleChange, errors }) {
             </div>
             <div className="mb-3">
                 <input
-                    type="text"
+                    type="tel"
                     name="tel"
                     className={`form-control ${errors.tel ? 'is-invalid' : ''} w-100`}
                     placeholder="Votre tel"

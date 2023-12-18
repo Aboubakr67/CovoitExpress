@@ -1,11 +1,15 @@
 import React from "react";
 import Form from "../Components/Form";
+import NavigationBar from "../Components/nav/NavigationBar";
 
 function Register() {
 
 
     return (
-        <Form></Form>
+        <div>
+            <NavigationBar></NavigationBar>
+            <Form></Form>
+        </div>
     )
 }
 
