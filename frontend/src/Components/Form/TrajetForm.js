@@ -314,6 +314,7 @@ const TrajetForm = () => {
         conducteur: currentUser?.id,
         depart: formData.depart,
         destination: formData.destination,
+        date: formData.date.toString(),
         heure_depart: formData.heureDepart,
         heure_arrivee: `${heuresArrivee}h ${minutesArrivee}min`,
         distance: distance.toString() + " km",
