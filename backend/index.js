@@ -1,32 +1,31 @@
 const express = require("express");
 const cors = require("cors");
-const mongoose = require('mongoose');
+const { connect } = require("mongoose");
+require("dotenv").config();
+
 const authRoutes = require("./Routes/AuthRoutes");
+const VehiculeRoute = require("./Routes/VehiculeRoute");
+const TrajetRoute = require("./Routes/TrajetRoute");
+const { notFound, errorhandler } = require("./Middlewares/errorMiddleware");
+
 const app = express();
-const port = 4000;
-const cookieParser = require("cookie-parser");
 
-app.listen(port, () => {
-    console.log("Le serveur est démarrer sur le port", port);
-});
+app.use(express.json({ extented: true }));
+app.use(express.urlencoded({ extented: true }));
+app.use(cors({ credentials: true, origin: "http://localhost:3000" })); // Le serveur web est lancer sur le port 3000
 
-mongoose.connect("mongodb://localhost:27017/covoiturage", {
-})
-    .then(() => {
-        console.log("Connexion réussi à la BDD");
-    }).catch((err) => {
-        console.log(err.message);
-    });
+app.use("/api/auth", authRoutes);
+app.use("/api", VehiculeRoute, TrajetRoute);
 
-app.use(
-    cors({
-        origin: ["http://localhost:3000"],
-        methods: ["GET", "POST"],
-        credentials: true,
-    })
-);
+app.use(notFound);
+app.use(errorhandler);
 
-
-app.use(cookieParser());
-app.use(express.json());
-app.use("/", authRoutes);
+connect(process.env.MONGO_URI)
+  .then(
+    app.listen(process.env.PORT, () =>
+      console.log(`Server as running on port : ${process.env.PORT}`)
+    )
+  )
+  .catch((error) => {
+    console.log(error);
+  });

@@ -1,26 +1,22 @@
-const User = require("../Models/UserModel");
 const jwt = require("jsonwebtoken");
+const HttpError = require("../Models/errorModel");
 
-module.exports.checkUser = (req, res, next) => {
-    const token = req.cookies.jwt;
+const authMiddleware = async (req, res, next) => {
+  const Authorization = req.headers.Authorization || req.headers.authorization;
 
-    if (token) {
-        jwt.verify(token, "jwt_token_key", async (err, decodedToken) => {
-            if (err) {
-                res.json({ status: false });
-                next();
-            } else {
-                const user = await User.findById(decodedToken.id);
-                if (user) {
-                    res.json({ status: true, user: user.email });
-                } else {
-                    res.json({ status: false });
-                    next();
-                }
-            }
-        });
-    } else {
-        res.json({ status: false });
-        next();
-    }
-}
+  if (Authorization && Authorization.startsWith("Bearer")) {
+    const token = Authorization.split(" ")[1]; // Bearer z564d8z6es18z6s4d68s4dcs8c donc on récupere uniquement le token
+    jwt.verify(token, process.env.JWT_SECRET, (err, info) => {
+      if (err) {
+        return next(new HttpError("Unauthorized. Invalid token.", 403));
+      }
+
+      req.user = info;
+      next();
+    });
+  } else {
+    return next(new HttpError("Unauthorized. No token", 402));
+  }
+};
+
+module.exports = authMiddleware;

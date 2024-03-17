@@ -1,49 +1,62 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { UserContext } from "../context/userContext";
 import { useNavigate } from "react-router-dom";
-import { useCookies } from 'react-cookie';
-import axios from "axios";
-import { ToastContainer, toast } from "react-toastify";
 
+import TrajetForm from "../Components/Form/TrajetForm";
+import VehiculeUser from "../Components/VehiculeUser";
+import TrajetUser from "../Components/TrajetUser";
 
-function Dashboard() {
+const Dashboard = () => {
+  const navigate = useNavigate();
 
-    const navigate = useNavigate();
+  const { currentUser } = useContext(UserContext);
+  const token = currentUser?.token;
 
-    const [cookie, , removeCookie] = useCookies([]);
+  //redirect to login page for any user who isn't logged in
+  useEffect(() => {
+    if (!token) {
+      navigate("/login");
+    }
+  }, []);
 
-    useEffect(() => {
-        const verifyUser = async () => {
-            if (!cookie.jwt) {
-                navigate("/login");
-            } else {
-                const { data } = await axios.post("http://localhost:4000/api/dashboard", {}, { withCredentials: true });
+  // return (
+  //   <div className="container" style={{ marginTop: "110px" }}>
+  //     <div className="row">
+  //       <div className="col-md-12">
+  //         <h1>Bienvenu sur le dashboard</h1>
+  //       </div>
+  //       <TrajetUser/>
+  //       <VehiculeUser />
+  //     </div>
+  //   </div>
+  // );
 
-                if (!data.status) {
-                    removeCookie("jwt");
-                    navigate("/login");
-                } else {
-                    toast(`Hi ${data.user}`, { theme: "dark" });
-                }
-            }
-        };
-        verifyUser();
-    }, [cookie, navigate, removeCookie]);
-
-    const logOut = () => {
-        removeCookie("jwt");
-        navigate('/login');
-    };
-
-
-    return (
-        <>
-            <div className="private">
-                <h1>Dashboard</h1>
-                <button onClick={logOut}>Déconnexion</button>
+  return (
+    <div className="container-fluid" style={{ marginTop: "90px" }}>
+      <div className="row">
+        <div className="col-md-7">
+          <div className="card">
+            <div className="card-header bg-primary text-white">
+              <h3 className="card-title">Mes Trajets</h3>
             </div>
-            <ToastContainer />
-        </>
-    )
-}
+            <div className="card-body">
+              <TrajetUser />
+            </div>
+          </div>
+        </div>
+        <div className="col-md-5">
+          <div className="card">
+            <div className="card-header bg-success text-white">
+              <h3 className="card-title">Mes Véhicules</h3>
+            </div>
+            <div className="card-body">
+              <VehiculeUser />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default Dashboard;

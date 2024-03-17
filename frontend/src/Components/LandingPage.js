@@ -15,9 +15,9 @@ const LandingPage = () => {
                         {/* <button className="btn btn-primary btn-lg rounded-circle custom-button" style={{ color: 'black', backgroundColor: '#ee7942', fontFamily: 'Open Sans, sans-serif', fontWeight: 700 }} >Trouver un trajet</button> */}
 
 
-                        <button class="cssbuttons-io-button">
+                        <button className="cssbuttons-io-button">
                             Commencer
-                            <div class="icon">
+                            <div className="icon">
                                 <svg
                                     height="24"
                                     width="24"

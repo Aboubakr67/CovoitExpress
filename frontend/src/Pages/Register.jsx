@@ -1,16 +1,8 @@
 import React from "react";
-import Form from "../Components/Form";
-import NavigationBar from "../Components/nav/NavigationBar";
+import MultiStepForm from "../Components/Form/MultiStepForm";
 
 function Register() {
-
-
-    return (
-        <div>
-            <NavigationBar></NavigationBar>
-            <Form></Form>
-        </div>
-    )
+  return <MultiStepForm></MultiStepForm>;
 }
 
 export default Register;
