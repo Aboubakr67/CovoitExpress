@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useContext } from "react";
-import { UserContext } from "../../context/userContext";
-import axios from "axios";
+import { UserContext } from "../context/userContext";
 import { useNavigate } from "react-router-dom";
-import SuccessMessage from "../card/SuccessMessage";
+import axios from "axios";
+import { useParams } from "react-router-dom";
 
-const VehiculeForm = () => {
+const EditVehicule = () => {
+  const { id } = useParams();
+
   const navigate = useNavigate();
 
   const { currentUser } = useContext(UserContext);
-
-  const created = localStorage.getItem("created");
-
 
   const [formData, setFormData] = useState({
     marque: "",
@@ -20,29 +19,57 @@ const VehiculeForm = () => {
     immatriculation: "",
   });
 
+  const [modifiedData, setModifiedData] = useState({});
+
+  const [vehicule, setVehicule] = useState();
+
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const cleanup = () => {
-      // Supprimer les données de localStorage lors de la fermeture de la page
-      localStorage.removeItem("created");
+    const getVehicule = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:5000/api/getVehicule/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${currentUser?.token}`, // token
+            },
+          }
+        );
+        setVehicule(response.data.vehicule);
+
+        // Mettre à jour les valeurs dans formData avec les données du véhicule
+        setFormData({
+          ...formData,
+          marque: response.data.vehicule.marque,
+          modele: response.data.vehicule.modele,
+          annee: response.data.vehicule.annee,
+          couleur: response.data.vehicule.couleur,
+          immatriculation: response.data.vehicule.immatriculation,
+        });
+      } catch (error) {
+        console.log(error);
+      }
     };
 
-    localStorage.removeItem("created");
+    if (currentUser) {
+      getVehicule();
+    }
 
-    // Attacher un gestionnaire d'événements à l'événement beforeunload
-    window.addEventListener("beforeunload", cleanup);
-
-    // Nettoyer lors du démontage du composant
     return () => {
-      window.removeEventListener("beforeunload", cleanup);
+      //   Cleanup function
+      //   Ajoutez ici le code de nettoyage si nécessaire
     };
   }, []);
 
-  
-
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    setModifiedData({
+      ...modifiedData,
+      [name]: value,
+    });
+
     setFormData({
       ...formData,
       [name]: value,
@@ -78,24 +105,34 @@ const VehiculeForm = () => {
     } else {
       //   console.log(formData);
 
+      // Vérifier si des modifications ont été apportées
+      const isModified = Object.keys(modifiedData).length > 0;
+
+      if (!isModified) {
+        setError("Aucune modification détectée.");
+        return;
+      }
+
       try {
-        const response = await axios.post(
-          "http://localhost:5000/api/createVehicule",
-          { ...formData, userId: currentUser.id },
+        const response = await axios.patch(
+          `http://localhost:5000/api/editVehicule/${id}`,
+          { ...formData },
           {
             headers: {
               Authorization: `Bearer ${currentUser?.token}`, // token
             },
           }
         );
-        const vehicule = await response.data;
-        if (!vehicule) {
-          setError("Impossible d'enregistrer le vehicule. Veuillez réessayer.");
+        const edited = await response.data.edited;
+        if (!edited) {
+          setError(
+            "Erreur dans la modification du vehicule. Veuillez réessayer."
+          );
         }
 
         setError("");
         // Stocker les données dans localStorage
-        localStorage.setItem("created", response.data.created);
+        localStorage.setItem("edited", edited);
 
         setFormData({
           marque: "",
@@ -105,7 +142,7 @@ const VehiculeForm = () => {
           immatriculation: "",
         });
 
-        navigate("/create-vehicule");
+        navigate(`/vehicule-details/${vehicule._id}`);
       } catch (error) {
         console.log(error);
       }
@@ -113,14 +150,12 @@ const VehiculeForm = () => {
   };
 
   return (
-    <div className="container" style={{ marginTop: "100px" }}>
+    <div className="container" style={{ marginTop: "90px" }}>
       <div className="row">
         <div className="col-md-12">
           <form onSubmit={handleSubmit}>
-            <h2>Ajout d'un vehicule</h2>
-            <div className="d-flex justify-content-center align-items-center">
-              {created && <SuccessMessage message="Véhicule créer !" />}
-            </div>
+            <h2>Modification du vehicule</h2>
+            <div className="d-flex justify-content-center align-items-center"></div>
             {error && (
               <div className="alert alert-danger text-center">{error}</div>
             )}
@@ -199,7 +234,7 @@ const VehiculeForm = () => {
 
             <div className="d-flex justify-content-center mt-4">
               <button className="btn btn-primary" type="submit">
-                Créer
+                Modifier
               </button>
             </div>
           </form>
@@ -209,4 +244,4 @@ const VehiculeForm = () => {
   );
 };
 
-export default VehiculeForm;
+export default EditVehicule;

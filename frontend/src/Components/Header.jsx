@@ -1,10 +1,19 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import { UserContext } from "../context/userContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser } from "@fortawesome/free-solid-svg-icons";
+import {
+  faUser,
+  faRoute,
+  faCar,
+  faRightFromBracket,
+  faMagnifyingGlass,
+} from "@fortawesome/free-solid-svg-icons";
+
 import Logout from "../Pages/Logout";
+import AddCircleRoundedIcon from "@mui/icons-material/AddCircleRounded";
+import DirectionsCarFilledRoundedIcon from "@mui/icons-material/DirectionsCarFilledRounded";
 
 const Header = () => {
   const { currentUser } = useContext(UserContext);
@@ -42,13 +51,22 @@ const Header = () => {
                 </Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link text-black" to="/trajet">
-                  Trajet
+                <Link className="nav-link text-black" to="/rechercher">
+                  <FontAwesomeIcon
+                    icon={faMagnifyingGlass}
+                    style={{ fontSize: "15px" }}
+                  />
+                  Rechercher
                 </Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link text-black" to="/vehicule">
-                  Véhicule
+                <Link className="nav-link text-black" to="/create-trajet">
+                  <AddCircleRoundedIcon /> Publier un trajet
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link text-black" to="/create-vehicule">
+                  <DirectionsCarFilledRoundedIcon /> Créer un véhicule
                 </Link>
               </li>
               <li className="nav-item dropdown">
@@ -62,11 +80,23 @@ const Header = () => {
                   aria-haspopup="true"
                 >
                   <FontAwesomeIcon icon={faUser} className="mr-2" />
-                  {currentUser?.prenom}
+                  {currentUser?.nom} {currentUser?.prenom}
                 </a>
                 <ul className="dropdown-menu" aria-labelledby="navbarDropdown">
                   <li>
+                    <Link className="dropdown-item" to="/mes-trajets">
+                      <FontAwesomeIcon icon={faRoute} /> Mes trajets
+                    </Link>
+                  </li>
+                  <li>
+                    <Link className="dropdown-item" to="/mes-vehicules">
+                      <FontAwesomeIcon icon={faCar} />
+                      Mes vehicules
+                    </Link>
+                  </li>
+                  <li>
                     <Link className="dropdown-item" to="/profil">
+                      <FontAwesomeIcon icon={faUser} />
                       Profil
                     </Link>
                   </li>
@@ -79,6 +109,7 @@ const Header = () => {
                       to="/logout"
                       onClick={<Logout />}
                     >
+                      <FontAwesomeIcon icon={faRightFromBracket} />
                       Déconnexion
                     </Link>
                   </li>

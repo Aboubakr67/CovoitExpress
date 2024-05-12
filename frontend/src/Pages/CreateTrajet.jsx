@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import TrajetForm from "../Components/Form/TrajetForm";
 
-const Trajet = () => {
+const CreateTrajet = () => {
   const navigate = useNavigate();
 
   const { currentUser } = useContext(UserContext);
@@ -22,6 +22,7 @@ const Trajet = () => {
       <TrajetForm />
     </div>
   );
+
 };
 
-export default Trajet;
+export default CreateTrajet;

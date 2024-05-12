@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useContext } from "react";
+import { UserContext } from "../context/userContext";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import { UserContext } from "../../context/userContext";
-import SuccessMessage from "../card/SuccessMessage";
+import { useParams } from "react-router-dom";
+import SuccessMessage from "../Components/card/SuccessMessage";
 
-const TrajetForm = () => {
+const EditTrajet = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
 
   // Récupère l'user connecter à partir du context
   const { currentUser } = useContext(UserContext);
 
-  const created = localStorage.getItem("created");
+  const [trajet, setTrajet] = useState();
 
   // Champ du formulaire
   const [formData, setFormData] = useState({
@@ -21,6 +23,8 @@ const TrajetForm = () => {
     placesDisponibles: 1,
     vehicule: "",
   });
+
+  const [modifiedData, setModifiedData] = useState({});
 
   // Véhicule(s) de l'utilisateur
   const [vehicules, setVehicules] = useState([]);
@@ -38,23 +42,53 @@ const TrajetForm = () => {
   const [searchResultsDestination, setSearchResultsDestination] = useState([]);
 
   // Permet de vérifie s'il l'utilisateur à bien selectionner une adresse valide (de l'api gouv)
-  const [addressDepartSelected, setAddressDepartSelected] = useState(false);
-  const [addressArriveeSelected, setAddressArriveeSelected] = useState(false);
+  const [addressDepartSelected, setAddressDepartSelected] = useState(true);
+  const [addressArriveeSelected, setAddressArriveeSelected] = useState(true);
 
   useEffect(() => {
-    const cleanup = () => {
-      // Supprimer les données de localStorage lors de la fermeture de la page
-      localStorage.removeItem("created");
+    const getTrajet = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:5000/api/getTrajet/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${currentUser?.token}`, // token
+            },
+          }
+        );
+        const trajetData = response.data.trajet;
+        setTrajet(trajetData);
+
+        // Mettre à jour les valeurs dans formData avec les données du trajet
+        setFormData({
+          depart: trajetData.depart,
+          destination: trajetData.destination,
+          date: trajetData.date,
+          heureDepart: trajetData.heure_depart,
+          placesDisponibles: trajetData.placesDisponibles,
+          vehicule: trajetData.vehicule_utilisee._id,
+        });
+
+        setDepartCoordinates([
+          trajetData.coordonneeDepart[0],
+          trajetData.coordonneeDepart[1],
+        ]);
+        setDestinationCoordinates([
+          trajetData.coordonneeDestination[0],
+          trajetData.coordonneeDestination[1],
+        ]);
+      } catch (error) {
+        console.log(error);
+      }
     };
 
-    localStorage.removeItem("created");
+    if (currentUser) {
+      getTrajet();
+    }
 
-    // Attacher un gestionnaire d'événements à l'événement beforeunload
-    window.addEventListener("beforeunload", cleanup);
-
-    // Nettoyer lors du démontage du composant
     return () => {
-      window.removeEventListener("beforeunload", cleanup);
+      //   Cleanup function
+      //   Ajoutez ici le code de nettoyage si nécessaire
     };
   }, []);
 
@@ -110,6 +144,12 @@ const TrajetForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    setModifiedData({
+      ...modifiedData,
+      [name]: value,
+    });
+
     setFormData({
       ...formData,
       [name]: value,
@@ -117,8 +157,10 @@ const TrajetForm = () => {
 
     // Effectuer la recherche d'adresse avec un délai de 500 ms après la saisie
     if (name === "depart") {
+      setAddressDepartSelected(false);
       setTimeout(() => handleSearch(value, setSearchResultsDepart), 500);
     } else if (name === "destination") {
+      setAddressArriveeSelected(false);
       setTimeout(() => handleSearch(value, setSearchResultsDestination), 500);
     }
   };
@@ -127,6 +169,11 @@ const TrajetForm = () => {
     // Mettre à jour l'état du formulaire avec l'adresse sélectionnée
     setFormData({
       ...formData,
+      [name]: address,
+    });
+
+    setModifiedData({
+      ...modifiedData,
       [name]: address,
     });
 
@@ -212,6 +259,7 @@ const TrajetForm = () => {
       today.getDate()
     );
 
+
     if (
       isNaN(selectedDateFormatted.getTime()) ||
       selectedDateFormatted < todayFormatted ||
@@ -223,15 +271,21 @@ const TrajetForm = () => {
       return;
     }
 
-    // console.log(formData);
-    console.log("longitudeDepart: ", departCoordinates[0]);
-    console.log("latitudeDepart: ", departCoordinates[1]);
-    console.log("longitudeArrivee: ", destinationCoordinates[0]);
-    console.log("latitudeArrivee: ", destinationCoordinates[1]);
+    // Vérifier si des modifications ont été apportées
+    const isModified = Object.keys(modifiedData).length > 0;
+
+    if (!isModified) {
+      setError("Aucune modification détectée.");
+      return;
+    }
 
     let heuresArrivee, minutesArrivee;
     let distance, duration;
     let duree_hours, duree_minutes;
+
+    // console.log(formData);
+    // console.log("modifiedData");
+    // console.log(modifiedData);
 
     // Appelle de l'api openrouteservice pour récupérer la durée du trajet et la distance
     try {
@@ -278,43 +332,12 @@ const TrajetForm = () => {
           if (heuresArrivee >= 24) {
             heuresArrivee -= 24;
           }
-
-          // console.log(
-          //   "Heure d'arrivée : ",
-          //   heuresArrivee,
-          //   "h",
-          //   minutesArrivee,
-          //   "min",
-          //   secondesArrivee,
-          //   "s"
-          // );
         } else {
           console.error("Format d'heure de départ invalide");
         }
       } else {
         console.error("Format d'heure de départ invalide");
       }
-
-      // console.log("------------------------");
-      // console.log("------------------------");
-      // console.log("les donnes a recup");
-      // console.log("Conducteur : ", currentUser.id);
-      // console.log("Départ : ", formData.depart);
-      // console.log("Destination : ", formData.destination);
-      // console.log("Heure départ : ", formData.heureDepart);
-      // console.log(
-      //   "Heure arrivee : ",
-      //   heuresArrivee,
-      //   "h",
-      //   minutesArrivee,
-      //   "min"
-      // );
-      // console.log("Distance : ", distance);
-      // console.log("Duree : ", `${duree_hours}h ${duree_minutes}min`);
-      // console.log("Place disponibles : ", formData.placesDisponibles);
-      // console.log("Vehicule : ", formData.vehicule);
-      // console.log("------------------------");
-      // console.log("------------------------");
     } catch (error) {
       console.error("Erreur lors de la soumission du formulaire:", error);
       // Gérez les erreurs ici
@@ -323,22 +346,19 @@ const TrajetForm = () => {
     try {
       // Données à envoyer à l'API createTrajet
       const trajetData = {
-        conducteur: currentUser?.id,
         depart: formData.depart,
-        coordonneeDepart: [departCoordinates[0], departCoordinates[1]],
         destination: formData.destination,
-        coordonneeDestination: [destinationCoordinates[0], destinationCoordinates[1]],
         date: formData.date.toString(),
         heure_depart: formData.heureDepart,
-        heure_arrivee: `${heuresArrivee}:${minutesArrivee}`,
+        heure_arrivee: `${heuresArrivee}h ${minutesArrivee}min`,
         distance: distance.toString() + " km",
-        duree: `${duree_hours}h${duree_minutes}`,
+        duree: `${duree_hours}h ${duree_minutes}min`,
         placesDisponibles: formData.placesDisponibles,
         vehicule_utilisee: formData.vehicule,
       };
 
-      const response = await axios.post(
-        "http://localhost:5000/api/createTrajet",
+      const response = await axios.patch(
+        `http://localhost:5000/api/editTrajet/${trajet._id}`,
         trajetData,
         {
           headers: {
@@ -347,25 +367,16 @@ const TrajetForm = () => {
         }
       );
 
-      const trajet = await response.data.created;
-      if (!trajet) {
+      const trajetResponse = await response.data.edited;
+      if (!trajetResponse) {
         setError("Impossible d'enregistrer le trajet. Veuillez réessayer.");
       }
 
       setError("");
       // Stocker les données dans localStorage
-      localStorage.setItem("created", response.data.created);
+      localStorage.setItem("edited", response.data.edited);
 
-      setFormData({
-        depart: "",
-        destination: "",
-        date: "",
-        heureDepart: "",
-        placesDisponibles: 1,
-        vehicule: "",
-      });
-
-      navigate("/create-trajet");
+      navigate(`/trajet-details/${trajet._id}`);
     } catch (error) {
       console.log(error);
       setError("Erreur dans la création du trajet.");
@@ -378,10 +389,8 @@ const TrajetForm = () => {
       <div className="row">
         <div className="col-md-12">
           <form onSubmit={handleSubmit}>
-            <h2>Création d'un trajet</h2>
-            <div className="d-flex justify-content-center align-items-center">
-              {created && <SuccessMessage message="Trajet créer !" />}
-            </div>
+            <h2>Modification du trajet</h2>
+            <div className="d-flex justify-content-center align-items-center"></div>
             {error && (
               <div className="alert alert-danger text-center">{error}</div>
             )}
@@ -529,7 +538,7 @@ const TrajetForm = () => {
 
             <div className="d-flex justify-content-center mt-4">
               <button className="btn btn-primary" type="submit">
-                Créer
+                Modifier
               </button>
             </div>
           </form>
@@ -539,4 +548,4 @@ const TrajetForm = () => {
   );
 };
 
-export default TrajetForm;
+export default EditTrajet;

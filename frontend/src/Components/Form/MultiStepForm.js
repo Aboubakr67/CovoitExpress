@@ -60,6 +60,28 @@ function MultiStepForm() {
 
       if (!formData.dateNaissance || formData.dateNaissance.length <= 1) {
         errors.dateNaissance = "Veuillez entrer votre date de naissance";
+      } else {
+        // Validation de la date de naissance
+        const birthDate = new Date(formData.dateNaissance);
+        const today = new Date();
+        const minAgeDate = new Date(
+          today.getFullYear() - 15,
+          today.getMonth(),
+          today.getDate()
+        );
+        if (isNaN(birthDate.getTime())) {
+          errors.dateNaissance =
+            "Veuillez entrer une date de naissance valide.";
+        } else if (birthDate >= today) {
+          errors.dateNaissance =
+            "La date de naissance ne peut pas être dans le futur.";
+        } else if (birthDate > minAgeDate) {
+          errors.dateNaissance =
+            "Vous devez avoir au moins 15 ans pour vous inscrire.";
+        } else if (birthDate < new Date("1900-01-01")) {
+          errors.dateNaissance =
+            "La date de naissance ne doit pas être inférieur à 1900.";
+        }
       }
 
       if (!formData.adresse || formData.adresse.length <= 1) {
@@ -80,8 +102,13 @@ function MultiStepForm() {
         errors.password = "Veuillez entrer un mot de passe valide";
       } else {
         // Vérification de la complexité du mot de passe
+        // Au moins une lettre minuscule
+        // Au moins une lettre majuscule
+        // Au moins un chiffre
+        // Au moins un caractère spécial parmi @$!%*?&.
+        // Longueur minimale de 8 caractères
         const passwordRegex =
-          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]{8,}$/;
 
         if (!passwordRegex.test(formData.password)) {
           errors.password =
@@ -168,6 +195,8 @@ function MultiStepForm() {
   };
 
   const handleFormSubmit = async () => {
+    formData.dateNaissance = formData.dateNaissance.toString();
+
     const validationErrors = validate();
     if (Object.keys(validationErrors).length === 0 && isFormComplete()) {
       // Soumettre le formulaire

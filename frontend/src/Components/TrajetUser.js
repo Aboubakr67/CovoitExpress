@@ -3,10 +3,15 @@ import { UserContext } from "../context/userContext";
 import axios from "axios";
 import RoomIcon from "@mui/icons-material/Room";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import { Link } from "react-router-dom";
+import TrajetItem from "./TrajetItem";
+import SuccessMessage from "./card/SuccessMessage";
 
 const TrajetUser = () => {
   const { currentUser } = useContext(UserContext);
   const [trajets, setTrajets] = useState([]);
+
+  const deleted = localStorage.getItem("deleted");
 
   useEffect(() => {
     const fetchTrajets = async () => {
@@ -35,6 +40,20 @@ const TrajetUser = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const cleanup = () => {
+      localStorage.removeItem("deleted");
+    };
+
+    // Attacher un gestionnaire d'événements à l'événement beforeunload
+    window.addEventListener("beforeunload", cleanup);
+
+    // Nettoyer lors du démontage du composant
+    return () => {
+      window.removeEventListener("beforeunload", cleanup);
+    };
+  }, []);
+
   // Fonction pour générer le lien Google Maps avec l'itinéraire entre le départ et la destination
   const generateGoogleMapsLink = (depart, arrivee) => {
     return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(
@@ -43,70 +62,26 @@ const TrajetUser = () => {
   };
 
   return (
-    // <div className="container" style={{ marginTop: "90px" }}>
-    //   <div className="row">
-        <div className="col-md-6">
-          {trajets.length === 0 ? (
-            <p>Vous n'avez créé aucun trajet</p>
-          ) : (
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Véhicule</th>
-                  <th>Départ</th>
-                  <th>Destination</th>
-                  <th>Heure de départ</th>
-                  <th>Heure d'arrivée</th>
-                  <th>Distance</th>
-                  <th>Durée</th>
-                  <th>Lien</th>
-                  <th>Action</th>
-                  {/* <th>Consulter</th> */}
-                </tr>
-              </thead>
-              <tbody>
-                {trajets.map((trajet) => (
-                  <tr key={trajet._id}>
-                    <td>
-                      {trajet.vehicule_utilisee.marque}{" "}
-                      {trajet.vehicule_utilisee.modele}
-                    </td>
-                    <td>{trajet.depart}</td>
-                    <td>{trajet.destination}</td>
-                    <td>{trajet.heure_depart}</td>
-                    <td>{trajet.heure_arrivee}</td>
-                    <td>{trajet.distance}</td>
-                    <td>{trajet.duree}</td>
-                    <td>
-                      <a
-                        href={generateGoogleMapsLink(
-                          trajet.depart,
-                          trajet.destination
-                        )}
-                        target="_blank"
-                      >
-                        <RoomIcon />
-                      </a>
-                    </td>
-                    <td>
-                      <button className="btn btn-primary btn-block mb-2">
-                        Edit
-                      </button>
-                      <button className="btn btn-danger btn-block">
-                        Delete
-                      </button>
-                    </td>
-                    {/* <td>
-                      <VisibilityIcon />
-                    </td> */}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+    <section className="trajets">
+      {deleted && <SuccessMessage message="Trajet supprimer !" />}
+      {trajets.length > 0 ? (
+        <div className="container_t trajets_container">
+          {trajets.map((trajet) => (
+            <TrajetItem
+              key={trajet._id}
+              trajetId={trajet._id}
+              depart={trajet.depart}
+              destination={trajet.destination}
+              heure_depart={trajet.heure_depart}
+              heure_arrivee={trajet.heure_arrivee}
+              trajet_createdAt={trajet.createdAt}
+            />
+          ))}
         </div>
-    //   </div>
-    // </div>
+      ) : (
+        <h2 className="center">No trajets founds</h2>
+      )}
+    </section>
   );
 };
 

@@ -6,6 +6,7 @@ require("dotenv").config();
 const authRoutes = require("./Routes/AuthRoutes");
 const VehiculeRoute = require("./Routes/VehiculeRoute");
 const TrajetRoute = require("./Routes/TrajetRoute");
+const UserRoute = require("./Routes/UserRoutes");
 const { notFound, errorhandler } = require("./Middlewares/errorMiddleware");
 
 const app = express();
@@ -15,7 +16,7 @@ app.use(express.urlencoded({ extented: true }));
 app.use(cors({ credentials: true, origin: "http://localhost:3000" })); // Le serveur web est lancer sur le port 3000
 
 app.use("/api/auth", authRoutes);
-app.use("/api", VehiculeRoute, TrajetRoute);
+app.use("/api", VehiculeRoute, TrajetRoute, UserRoute);
 
 app.use(notFound);
 app.use(errorhandler);

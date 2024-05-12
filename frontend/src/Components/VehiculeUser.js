@@ -2,10 +2,30 @@ import React, { useState, useEffect, useContext } from "react";
 import { UserContext } from "../context/userContext";
 import axios from "axios";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import { Link } from "react-router-dom";
+import VehiculeItem from "./VehiculeItem";
+import SuccessMessage from "./card/SuccessMessage";
 
 const VehiculeUser = () => {
   const { currentUser } = useContext(UserContext);
   const [vehicules, setVehicules] = useState([]);
+
+  const deleted = localStorage.getItem("deleted");
+
+  useEffect(() => {
+    const cleanup = () => {
+      localStorage.removeItem("deleted");
+    };
+
+
+    // Attacher un gestionnaire d'événements à l'événement beforeunload
+    window.addEventListener("beforeunload", cleanup);
+
+    // Nettoyer lors du démontage du composant
+    return () => {
+      window.removeEventListener("beforeunload", cleanup);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchVehicules = async () => {
@@ -34,71 +54,19 @@ const VehiculeUser = () => {
     };
   }, []);
 
-  // return (
-  //   <div className="container" style={{ marginTop: "90px" }}>
-  //     <div className="row">
-  //       <div className="col-md-12">
-  //         <h2>Mes véhicule(s)</h2>
-  //         {vehicules.length === 0 ? (
-  //           <p>Aucun véhicule(s)</p>
-  //         ) : (
-  //           <ul>
-  //             {vehicules.map((vehicule) => (
-  //               <li key={vehicule._id}>
-  //                 {vehicule.immatriculation} - {vehicule.marque} - {vehicule.modele} - {vehicule.annee}
-  //               </li>
-  //             ))}
-  //           </ul>
-  //         )}
-  //       </div>
-  //     </div>
-  //   </div>
-  // );
-
   return (
-    // <div className="container" style={{ marginTop: "90px" }}>
-      // {/* <div className="row"> */}
-        <div className="col-md-6">
-          {vehicules.length === 0 ? (
-            <p>Aucun véhicule(s)</p>
-          ) : (
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Immatriculation</th>
-                  <th>Marque</th>
-                  <th>Modèle</th>
-                  <th>Année</th>
-                  <th>Action</th>
-                  {/* <th>Consulter</th> */}
-                </tr>
-              </thead>
-              <tbody>
-                {vehicules.map((vehicule) => (
-                  <tr key={vehicule._id}>
-                    <td>{vehicule.immatriculation}</td>
-                    <td>{vehicule.marque}</td>
-                    <td>{vehicule.modele}</td>
-                    <td>{vehicule.annee}</td>
-                    <td>
-                      <button className="btn btn-primary btn-block mb-2">
-                        Edit
-                      </button>
-                      <button className="btn btn-danger btn-block">
-                        Delete
-                      </button>
-                    </td>
-                    {/* <td>
-                      <VisibilityIcon />
-                    </td> */}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+    <section className="vehicules">
+      {deleted && <SuccessMessage message="Véhicule supprimer !" />}
+      {vehicules.length > 0 ? (
+        <div className="container_v vehicule_container">
+          {vehicules.map((vehicule) => (
+            <VehiculeItem key={vehicule._id} vehicule={vehicule} />
+          ))}
         </div>
-      // </div>
-    // </div>
+      ) : (
+        <h2 className="center">Aucun véhicule</h2>
+      )}
+    </section>
   );
 };
 

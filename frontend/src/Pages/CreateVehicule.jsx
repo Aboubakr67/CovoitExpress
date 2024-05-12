@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import VehiculeForm from "../Components/Form/VehiculeForm";
 import VehiculeUser from "../Components/VehiculeUser";
 
-const Vehicule = () => {
+const CreateVehicule = () => {
   const navigate = useNavigate();
 
   const { currentUser } = useContext(UserContext);
@@ -24,4 +24,4 @@ const Vehicule = () => {
   );
 };
 
-export default Vehicule;
+export default CreateVehicule;
